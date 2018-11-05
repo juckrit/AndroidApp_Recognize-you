@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="10"
+    tools:context=".Main2Activity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+
+        android:weightSum="10">
+
+        <TextView
+            android:id="@+id/familyNameInMain2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="8"
+                android:gravity="center"
+
+            android:textSize="20sp" />
+
+        <ImageButton
+            android:id="@+id/imageButton2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            app:srcCompat="@android:drawable/ic_menu_edit"
+            android:onClick="changeFamilyNameClick"/>
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/myListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="9" />
+
+    <android.support.v7.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/Btn_addNewFamily"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:onClick="addNewMemberClick"
+            android:text="Add New Member"
+            android:textSize="20sp" />
+    </android.support.v7.widget.LinearLayoutCompat>
+</android.widget.LinearLayout>

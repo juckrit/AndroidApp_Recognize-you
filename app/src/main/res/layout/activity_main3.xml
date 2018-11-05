@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Main3Activity">
+
+    <ImageButton
+        android:id="@+id/imageButtonMain3"
+        android:layout_width="match_parent"
+        android:layout_height="125dp"
+        android:layout_weight="1"
+        android:src="@mipmap/ic_add" />
+
+    <TextView
+        android:id="@+id/TextViewFirstNameMain3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+
+        android:gravity="center"
+
+
+        android:inputType="textPersonName" />
+
+
+    <TextView
+        android:id="@+id/TextViewLastNameMain3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+
+        android:gravity="center"
+
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/TextViewAgeMain3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+
+        android:gravity="center"
+
+
+        android:inputType="number"
+         />
+
+    <TextView
+        android:id="@+id/TextViewWeightMain3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_weight="1"
+        android:gravity="center"
+
+
+        android:inputType="number"
+         />
+
+    <TextView
+        android:id="@+id/TextViewHeightMain3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_weight="1"
+        android:gravity="center"
+
+
+        android:inputType="number"
+         />
+
+    <Button
+        android:id="@+id/imageButton2Main3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:onClick="updateMemberDetailClick"
+        android:text="press to edit"
+        android:textSize="30sp" />
+</android.widget.LinearLayout>

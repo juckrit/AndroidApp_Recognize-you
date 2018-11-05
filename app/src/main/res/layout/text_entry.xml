@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="match_parent"
+        android:layout_height="125dp"
+        android:layout_weight="1"
+        android:src="@mipmap/ic_add" />
+    <EditText
+        android:id="@+id/EditTextFirstName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ems="10"
+        android:hint="First Name"
+        android:inputType="textPersonName" />
+
+
+
+    <EditText
+        android:id="@+id/EditTextLastName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ems="10"
+        android:hint="Last Name"
+        android:inputType="textPersonName" />
+
+    <EditText
+        android:id="@+id/EditTextAge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ems="10"
+        android:hint="Age"
+        android:inputType="number"
+        android:maxLength="3" />
+
+    <EditText
+        android:id="@+id/EditTextWeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ems="10"
+        android:hint="Weight"
+        android:inputType="number"
+        android:maxLength="3" />
+
+    <EditText
+        android:id="@+id/EditTextHeight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ems="10"
+        android:hint="Height"
+        android:inputType="number"
+        android:maxLength="3" />
+
+</android.widget.LinearLayout>
