@@ -8,10 +8,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.BitmapCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -23,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 
 public class Main3Activity extends AppCompatActivity {
@@ -41,9 +44,11 @@ public class Main3Activity extends AppCompatActivity {
     int age;
     int weight;
     int height;
-    byte[] arr;
+    String path;
     Bitmap bitmap2;
     boolean isSelecteed = false;
+    String imgPathToBeInserted;
+    Uri imgUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +66,21 @@ public class Main3Activity extends AppCompatActivity {
         TextViewHeightMain3 = (TextView) findViewById(R.id.TextViewHeightMain3);
 
         getMemberDetail(memberId);
+        imageButtonMain3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (path == null) {
+                    Toast.makeText(getApplication(), "This is default image", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent();
+                    intent.setAction(Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.fromFile(new File(path)), "image/*");
+                    startActivity(intent);
+                }
+
+            }
+        });
 
     }
 
@@ -77,7 +97,7 @@ public class Main3Activity extends AppCompatActivity {
         int ageIndex = c.getColumnIndex("age");
         int weightIndex = c.getColumnIndex("weight");
         int heightIndex = c.getColumnIndex("height");
-        int imagDataIndex = c.getColumnIndex("imagData");
+        int imagDataIndex = c.getColumnIndex("imgPath");
         if (c.moveToFirst()) {
             do {
                 familyId = c.getInt(familyIdIndex);
@@ -92,15 +112,60 @@ public class Main3Activity extends AppCompatActivity {
                 TextViewAgeMain3.setText("Age: " + String.valueOf(age));
                 TextViewWeightMain3.setText("Weight: " + String.valueOf(weight));
                 TextViewHeightMain3.setText("Height: " + String.valueOf(height));
-                arr = c.getBlob(imagDataIndex);
-                mBitmapFromDatabase = BitmapFactory.decodeByteArray(arr, 0, arr.length);
-                imageButtonMain3.setImageBitmap(BitmapFactory.decodeByteArray(arr, 0, arr.length));
+                path = c.getString(imagDataIndex);
+                imgPathToBeInserted = path;
+//                mBitmapFromDatabase = convertPathToBitmap(path);
+//                imageButtonMain3.setImageBitmap(mBitmapFromDatabase);
+                setImgButtonIMG(path);
             } while (c.moveToNext());
         }
         if (c != null && !c.isClosed()) {
             c.close();
         }
 
+    }
+
+    public void setImgButtonIMG(String path) {
+
+        int size = 10; //minimize  as much as you want
+        if (path != null) {
+            Bitmap bitmapOriginal = BitmapFactory.decodeFile(path);
+            if (bitmapOriginal != null) {
+                int bitmapByteCount = BitmapCompat.getAllocationByteCount(bitmapOriginal);
+
+                if (bitmapByteCount > 10000000) {
+                    Bitmap bitmapsimplesize = Bitmap.createScaledBitmap(bitmapOriginal, bitmapOriginal.getWidth() / size, bitmapOriginal.getHeight() / size, true);
+                    mBitmapFromDatabase = bitmapsimplesize;
+                    imageButtonMain3.setImageBitmap(bitmapsimplesize);
+                } else {
+//                this.ivImg.setImageBitmap(bitmapOriginal);
+                    mBitmapFromDatabase = bitmapOriginal;
+                    imageButtonMain3.setImageURI(Uri.fromFile(new File(path)));
+                }
+
+            } else {
+                // Toast.makeText(getContext(),"File "+ path+"Not Exist",Toast.LENGTH_SHORT).show();
+                Drawable myDrawable = getResources().getDrawable(R.drawable.boy);
+                imageButtonMain3.setImageDrawable(myDrawable);
+                mBitmapFromDatabase = ((BitmapDrawable) myDrawable).getBitmap();
+
+
+            }
+
+        } else {
+//        this.ivImg.setImageURI(Uri.fromFile(new File(path))); //work but out of mem error
+            //       this.ivImg.setImageBitmap(bitmapsimplesize);
+            Drawable myDrawable = getResources().getDrawable(R.drawable.boy);
+
+            imageButtonMain3.setImageDrawable(myDrawable);
+        }
+    }
+
+    private String getRealPathFromURI(Uri uri) {
+        Cursor cursor = getApplication().getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+        return cursor.getString(idx);
     }
 
     @Override
@@ -114,6 +179,7 @@ public class Main3Activity extends AppCompatActivity {
 //        mBitmap = null;
         try {
             bitmap2 = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+            imgPathToBeInserted = getRealPathFromURI(imageUri);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -141,7 +207,13 @@ public class Main3Activity extends AppCompatActivity {
         input3.setText(String.valueOf(age));
         input4.setText(String.valueOf(weight));
         input5.setText(String.valueOf(height));
-        imageButton.setImageBitmap(mBitmapFromDatabase);
+        if (mBitmapFromDatabase == null) {
+            Drawable myDrawable = getResources().getDrawable(R.drawable.boy);
+
+            imageButton.setImageDrawable(myDrawable);
+        } else {
+            imageButton.setImageBitmap(mBitmapFromDatabase);
+        }
 
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -191,12 +263,15 @@ public class Main3Activity extends AppCompatActivity {
                                 }
                                 //Bitmap bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), imageUri);
                                 if (isSelecteed) {
-                                    updateMemberToDb(memberId, familyId, firstName, lasttName, age, weight, height, bitmap2);
+
+//                                    updateMemberToDb(memberId, familyId, firstName, lasttName, age, weight, height, bitmap2);
+                                    updateMemberToDb(memberId, familyId, firstName, lasttName, age, weight, height, imgPathToBeInserted);
 
                                 } else {
 
-                                    bitmap2 = mBitmapFromDatabase;
-                                    updateMemberToDb(memberId, familyId, firstName, lasttName, age, weight, height, bitmap2);
+//                                    bitmap2 = mBitmapFromDatabase;
+//                                    updateMemberToDb(memberId, familyId, firstName, lasttName, age, weight, height, bitmap2);
+                                    updateMemberToDb(memberId, familyId, firstName, lasttName, age, weight, height, imgPathToBeInserted);
                                 }
 
                             }
@@ -213,10 +288,10 @@ public class Main3Activity extends AppCompatActivity {
         alert.show();
     }
 
-    public void updateMemberToDb(int id, int familyId, String firstName, String lastName, int age, int weight, int height, Bitmap bitmap) {
+    public void updateMemberToDb(int id, int familyId, String firstName, String lastName, int age, int weight, int height, String path) {
         String checkFirstName = "";
         String checkLastName = "";
-        byte[] test = {0};
+
         if (TextUtils.isEmpty(firstName)) {
             checkFirstName = "Unknown";
         } else {
@@ -227,15 +302,7 @@ public class Main3Activity extends AppCompatActivity {
         } else {
             checkLastName = lastName;
         }
-        if (bitmap == null) {
-            bitmap = BitmapFactory.decodeResource(getApplication().getResources(),
-                    R.drawable.ic_launcher_background);
-        } else {
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 50, byteArrayOutputStream);
-            test = byteArrayOutputStream.toByteArray();
-        }
 
         SQLiteDatabase database = MainActivity.db;
         ContentValues cv = new ContentValues();
@@ -245,7 +312,7 @@ public class Main3Activity extends AppCompatActivity {
         cv.put("age", age);
         cv.put("weight", weight);
         cv.put("height", height);
-        cv.put("imagData", test);
+        cv.put("imgPath", path);
 
         String whereCl = "id=" + id;
         database.update("familyMember", cv, whereCl, null);

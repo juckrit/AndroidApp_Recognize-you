@@ -3,7 +3,7 @@ package com.example.administrator.mydatabasegui;
 import android.graphics.Bitmap;
 
 public class MyItem {
-    private Bitmap mBitmap;
+    private String imgPath;
     private String fullname;
     private int age;
     private int weight;
@@ -12,20 +12,12 @@ public class MyItem {
     public MyItem() {
     }
 
-    public MyItem(Bitmap mBitmap, String fullname, int age, int weight, int height) {
-        this.mBitmap = mBitmap;
-        this.fullname = fullname;
-        this.age = age;
-        this.weight = weight;
-        this.height = height;
+    public String getImgPath() {
+        return imgPath;
     }
 
-    public Bitmap getmBitmap() {
-        return mBitmap;
-    }
-
-    public void setmBitmap(Bitmap mBitmap) {
-        this.mBitmap = mBitmap;
+    public void setImgPathimgPath(String imgPath) {
+        this.imgPath = imgPath;
     }
 
     public String getFullname() {

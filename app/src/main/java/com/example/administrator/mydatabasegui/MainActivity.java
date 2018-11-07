@@ -1,9 +1,11 @@
 package com.example.administrator.mydatabasegui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -11,7 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -41,24 +45,71 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Integer> arrayListId;
     static SQLiteDatabase db;
     Button myButton;
+    final String TAG = "tag";
+    static boolean isPermissionGranted = false;
 
+    public boolean checkPermissionForReadExtertalStorage() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            int result = MainActivity.this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
+            return result == PackageManager.PERMISSION_GRANTED;
+        }
+        return false;
+    }
+
+    public void requestPermissionForReadExtertalStorage() throws Exception {
+        try {
+            ActivityCompat.requestPermissions((Activity) MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        listView = (ListView) findViewById(R.id.myListView);
-        myButton = (Button) findViewById(R.id.Btn_addNewFamily);
+//        ActivityCompat.requestPermissions(MainActivity.this,
+//                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+        if (checkPermissionForReadExtertalStorage()) {
+            Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_SHORT).show();
+            isPermissionGranted = true;
+
+        } else {
+            Toast.makeText(getApplicationContext(), "If Permission Not Granted. Image default will be used", Toast.LENGTH_LONG).show();
+
+            try {
+                requestPermissionForReadExtertalStorage();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        listView = (ListView)
+
+                findViewById(R.id.myListView);
+
+        myButton = (Button)
+
+                findViewById(R.id.Btn_addNewFamily);
+
         arrayList = new ArrayList<>();
         arrayListId = new ArrayList<>();
-        db = this.openOrCreateDatabase("Fimilys", MODE_PRIVATE, null);
+        db = this.
+
+                openOrCreateDatabase("Fimilys", MODE_PRIVATE, null);
         db.execSQL("CREATE TABLE IF NOT EXISTS family(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                 "familyName NVARCHAR(50) NOT NULL)");
-        db.execSQL("CREATE TABLE IF NOT EXISTS familyMember(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, familyId INTEGER NOT NULL, firstName NVARCHAR(50), lastName NVARCHAR(50), age int(2), weight int(3), height int(3),imagData BLOB)");
-        arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayList);
+        db.execSQL("CREATE TABLE IF NOT EXISTS familyMember(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, familyId INTEGER NOT NULL, firstName NVARCHAR(50), lastName NVARCHAR(50), age int(2), weight int(3), height int(3),imgPath TEXT)");
+        arrayAdapter = new
+
+                ArrayAdapter(this, android.R.layout.simple_list_item_1, arrayList);
         listView.setAdapter(arrayAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+
+        {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(getApplicationContext(), arrayList.get(position), Toast.LENGTH_SHORT).show();
@@ -68,17 +119,42 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
-                deleteFamilyFromDB(arrayList.get(position), position);
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+
+        {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position,
+                                           long id) {
+                final String[] familyName = new String[1];
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Are you sure want to delete this family?");
+
+// Set up the buttons
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteFamilyFromDB(arrayList.get(position), position);
+
+
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
                 return true;
             }
         });
 
 
         updateListView();
+
     }
 
     public void createData() {
@@ -127,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     familyName[0] = input.getText().toString();
-                    Toast.makeText(getApplicationContext(), "name" + familyName[0], Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "name " + familyName[0], Toast.LENGTH_SHORT).show();
                     addFamilyToDB(familyName[0]);
 
                 }
@@ -159,18 +235,14 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    if(s.length()>=1)
-                    {
+                    if (s.length() >= 1) {
                         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                    }
-                    else {
+                    } else {
                         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 
                     }
                 }
             });
-
-
 
 
         } catch (Exception e) {

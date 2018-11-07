@@ -17,6 +17,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.BitmapCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -35,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -49,6 +51,7 @@ public class Main2Activity extends AppCompatActivity {
     ImageButton imageButton;
     ImageView imageView;
     Bitmap mBitmap;
+    Uri imageUri;
 
     ArrayList<byte[]> arrayListBitmap;
 
@@ -64,37 +67,57 @@ public class Main2Activity extends AppCompatActivity {
         arrayListMemberId = new ArrayList<>();
         arrayListBitmap = new ArrayList<>();
         MyItem myItem = new MyItem();
+        imageUri = null;
+
 
         listView = (ListView) findViewById(R.id.myListView);
         familyNameInMain2 = (TextView) findViewById(R.id.familyNameInMain2);
         familyNameInMain2.setText(getFamilyName(mFamilyId));
         arrayAdapter = new MyAdapter(this, R.layout.mylistview, arrayList);
         listView.setAdapter(arrayAdapter);
-        Toast.makeText(getApplicationContext(), "id " + String.valueOf(mFamilyId), Toast.LENGTH_SHORT).show();
-
+        //Toast.makeText(getApplicationContext(), "id " + String.valueOf(mFamilyId), Toast.LENGTH_SHORT).show();
+        //addMemberToDb(1, "f", "l", 1, 1, 1, "s");
         updateListView();
 //        updateArrayMemberId();
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "positionOfLV " + String.valueOf(position) + " Id " + arrayListMemberId.get(position) + " positionOfArray " + arrayListMemberId.indexOf(arrayListMemberId.get(position)), Toast.LENGTH_LONG).show();
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                //Toast.makeText(getApplicationContext(), "positionOfLV " + String.valueOf(position) + " Id " + arrayListMemberId.get(position) + " positionOfArray " + arrayListMemberId.indexOf(arrayListMemberId.get(position)), Toast.LENGTH_LONG).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(Main2Activity.this);
+                builder.setTitle("Are you sure want to delete this member?");
 
-                deleteMemberFromDb(arrayListMemberId.get(position), position);
+// Set up the buttons
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteMemberFromDb(arrayListMemberId.get(position), position);
+
+
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                builder.show();
                 return true;
             }
         });
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "positionOfLV " + String.valueOf(position) + " Id " + arrayListMemberId.get(position) + " positionOfArray " + arrayListMemberId.indexOf(arrayListMemberId.get(position)), Toast.LENGTH_LONG).show();
-                Intent intent2 = new Intent(getApplicationContext(),Main3Activity.class);
-                intent2.putExtra("memberId",arrayListMemberId.get(position));
+                //Toast.makeText(getApplicationContext(), "positionOfLV " + String.valueOf(position) + " Id " + arrayListMemberId.get(position) + " positionOfArray " + arrayListMemberId.indexOf(arrayListMemberId.get(position)), Toast.LENGTH_LONG).show();
+                Intent intent2 = new Intent(getApplicationContext(), Main3Activity.class);
+                intent2.putExtra("memberId", arrayListMemberId.get(position));
                 startActivity(intent2);
             }
         });
     }
 
-//    public void updateArrayMemberId() {
+    //    public void updateArrayMemberId() {
 //        String sql = "SELECT id FROM familyMember WHERE familyId = " + mFamilyId;
 //        Cursor c = MainActivity.db.rawQuery(sql, null);
 //        int idIndex = c.getColumnIndex("id");
@@ -108,6 +131,34 @@ public class Main2Activity extends AppCompatActivity {
 //
 //
 //    }
+    private Bitmap convertPathToBitmap(String path) {
+        Bitmap bitmapsimplesize;
+
+        int size = 10; //minimize  as much as you want
+        if (path != null) {
+            Bitmap bitmapOriginal = BitmapFactory.decodeFile(path);
+            if (bitmapOriginal != null) {
+                int bitmapByteCount = BitmapCompat.getAllocationByteCount(bitmapOriginal);
+                if (bitmapByteCount > 50000000) {
+                    bitmapsimplesize = Bitmap.createScaledBitmap(bitmapOriginal, bitmapOriginal.getWidth() / size, bitmapOriginal.getHeight() / size, true);
+
+                } else {
+
+                    bitmapsimplesize = bitmapOriginal;
+                }
+
+            } else {
+                bitmapsimplesize = bitmapOriginal;
+
+            }
+
+        } else {
+
+            return null;
+
+        }
+        return null;
+    }
 
     public void updateListView() {
         String sql = "SELECT * FROM familyMember WHERE familyId = " + mFamilyId;
@@ -119,32 +170,22 @@ public class Main2Activity extends AppCompatActivity {
         int ageIndex = c.getColumnIndex("age");
         int weightIndex = c.getColumnIndex("weight");
         int heightIndex = c.getColumnIndex("height");
-        int imagDataIndex = c.getColumnIndex("imagData");
+        int imagPathIndex = c.getColumnIndex("imgPath");
+        c.moveToFirst();
+        String imgPath;
 
-        byte[] arr;
         if (c.moveToFirst()) {
             arrayList.clear();
             do {
                 MyItem myItem = new MyItem();
-//                Bitmap bitmap;
-//                try {
-//                    URL url = new URL("            URL url = earch?rlz=1C1NHXL_thTH689TH689&biw=1366&bih=657&tbm=isch&sa=1&ei=Cy_QW5rUKcvbvgTC1YnACQ&q=java+&oq=java+&gs_l=img.3..0l7j0i67k1j0l2.2757.2757.0.2913.1.1.0.0.0.0.117.117.0j1.1.0....0...1c.1.64.img..0.1.115....0.Fw3CvHDeXak#imgrc=gq58pnOzw2VP3M:\");\n");
-//                    InputStream in = url.openStream();
-//                    bitmap = BitmapFactory.decodeStream(in);
-//                    myItem.setmBitmap(bitmap);
-//                } catch (MalformedURLException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
                 myItem.setFullname(c.getString(firstNameIndex) + " " + c.getString(lastNameIndex));
                 myItem.setAge(c.getInt(ageIndex));
                 myItem.setHeight(c.getInt(heightIndex));
                 myItem.setWeight(c.getInt(weightIndex));
-                arr = c.getBlob(imagDataIndex);
-                myItem.setmBitmap(BitmapFactory.decodeByteArray(arr, 0, arr.length));
+                imgPath = c.getString(imagPathIndex);
+                myItem.setImgPathimgPath(imgPath);
                 arrayList.add(myItem);
-                arr = null;
+                imgPath = null;
             } while (c.moveToNext());
         }
         arrayAdapter.notifyDataSetChanged();
@@ -225,10 +266,19 @@ public class Main2Activity extends AppCompatActivity {
                                     height = Integer.valueOf(heightStr);
                                 }
                                 //Bitmap bitmap = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), imageUri);
-                                Drawable d = imageButton.getDrawable();
+
                                 Bitmap bitmap = mBitmap;
-                                addMemberToDb(mFamilyId, firstName, lasttName, age, weight, height, bitmap);
-                                mBitmap=null;
+                                String path;
+                                if (imageUri == null) {
+                                    path = null;
+                                } else {
+
+                                    path = getRealPathFromURI(imageUri);
+                                }
+
+                                addMemberToDb(mFamilyId, firstName, lasttName, age, weight, height, path);
+                                mBitmap = null;
+                                imageUri = null;
                             }
                         })
                 .setNegativeButton("Cancel",
@@ -289,7 +339,7 @@ public class Main2Activity extends AppCompatActivity {
 
     }
 
-    public void addMemberToDb(int familyId, String firstName, String lastName, int age, int weight, int height, Bitmap bitmap) {
+    public void addMemberToDb(int familyId, String firstName, String lastName, int age, int weight, int height, String path) {
 //        Log.i("result", String.valueOf(familyId));
 ////        Log.i("result", String.valueOf(firstName));
 ////        Log.i("result", String.valueOf(lastName));
@@ -298,7 +348,7 @@ public class Main2Activity extends AppCompatActivity {
 ////        Log.i("result", String.valueOf(height));
         String checkFirstName = "";
         String checkLastName = "";
-        byte[] test = {0};
+
         if (TextUtils.isEmpty(firstName)) {
             checkFirstName = "Unknown";
         } else {
@@ -309,15 +359,7 @@ public class Main2Activity extends AppCompatActivity {
         } else {
             checkLastName = lastName;
         }
-        if (bitmap == null) {
-            bitmap = BitmapFactory.decodeResource(getApplication().getResources(),
-                    R.drawable.ic_launcher_background);
-        }else {
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 50, byteArrayOutputStream);
-            test = byteArrayOutputStream.toByteArray();
-        }
 
 //        String str = new String(imgByteArray, StandardCharsets.UTF_8);
         //  byte[] b = str.getBytes();
@@ -336,7 +378,7 @@ public class Main2Activity extends AppCompatActivity {
         cv.put("age", age);
         cv.put("weight", weight);
         cv.put("height", height);
-        cv.put("imagData", test);
+        cv.put("imgPath", path);
 
         database.insert("familyMember", null, cv);
 
@@ -344,6 +386,12 @@ public class Main2Activity extends AppCompatActivity {
         updateListView();
     }
 
+    private String getRealPathFromURI(Uri uri) {
+        Cursor cursor = getApplication().getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+        return cursor.getString(idx);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -351,7 +399,7 @@ public class Main2Activity extends AppCompatActivity {
             return;
         }
         ImageButton imageButton = (ImageButton) textEntryView.findViewById(R.id.imageButton);
-        Uri imageUri = data.getData();
+        imageUri = data.getData();
 
         mBitmap = null;
         try {
